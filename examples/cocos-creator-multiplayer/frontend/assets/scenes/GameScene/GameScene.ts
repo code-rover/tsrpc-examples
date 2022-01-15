@@ -1,5 +1,5 @@
 
-import { Button, Color, Component, instantiate, MeshRenderer, Node, Prefab, UIOpacity, Vec2, _decorator } from 'cc';
+import { Button, Color, Component, instantiate, LabelComponent, MeshRenderer, Node, Prefab, ProgressBarComponent, random, randomRangeInt, UIOpacity, Vec2, _decorator } from 'cc';
 import { Arrow } from '../../prefabs/Arrow/Arrow';
 import { Joystick } from '../../prefabs/Joystick/Joystick';
 import { Player } from '../../prefabs/Player/Player';
@@ -7,6 +7,10 @@ import { FollowCamera } from '../../scripts/components/FollowCamera';
 import { GameManager } from '../../scripts/models/GameManager';
 import { gameConfig } from '../../scripts/shared/game/gameConfig';
 import { ArrowState } from '../../scripts/shared/game/state/ArrowState';
+
+import * as fgui from "fairygui-cc"
+import { EnumPlayerRole } from '../../scripts/shared/game/EnumPlayerRole';
+
 const { ccclass, property } = _decorator;
 
 @ccclass('GameScene')
@@ -29,9 +33,28 @@ export class GameScene extends Component {
     camera: FollowCamera = null as any;
 
     @property(Node)
+    btnReady: Node = null as any;
+
+    @property(Node)
     btnAttack: Node = null as any;
+
+    @property(Node)
+    btnDoTask: Node = null as any;
+
     @property(Node)
     attackPosIndicator!: Node;
+    
+    @property(LabelComponent)
+    lbPlayerInfo_1!: LabelComponent;
+    @property(LabelComponent)
+    lbPlayerInfo_2!: LabelComponent;
+    @property(LabelComponent)
+    lbPlayerInfo_3!: LabelComponent;
+    @property(LabelComponent)
+    lbPlayerInfo_4!: LabelComponent;
+
+    @property(ProgressBarComponent)
+    barTaskProcess!: ProgressBarComponent;
 
     gameManager!: GameManager;
 
@@ -39,10 +62,20 @@ export class GameScene extends Component {
     private _arrowInstances: { [arrowId: number]: Arrow | undefined } = {};
     private _selfSpeed?: Vec2 = new Vec2(0, 0);
 
+    private _playerInfoNodeMap: { [playerId: number]: number } = {};
+
+    private _playerInfoNodeArray :LabelComponent[] =  []
+    private _playerInfoNodeUsedArray :boolean[] = [false, false, false, false]
+
     onLoad() {
         (window as any).game = this;
 
+        //任务按钮默认关闭
+        this.btnDoTask.active = false;
+        this.btnAttack.active = true;
+
         this.attackPosIndicator.getComponent(MeshRenderer)!.material!.setProperty('mainColor', Color.CYAN);
+        this._playerInfoNodeArray = [this.lbPlayerInfo_1, this.lbPlayerInfo_2, this.lbPlayerInfo_3, this.lbPlayerInfo_4];
 
         // 初始化摇杆
         this.joyStick.options = {
@@ -93,6 +126,8 @@ export class GameScene extends Component {
         this._updatePlayers();
 
         this._updateAttackIndicator();
+
+        this._updateUIInfo();
     }
 
     private _updatePlayers() {
@@ -107,9 +142,31 @@ export class GameScene extends Component {
                 player = this._playerInstances[playerState.id] = node.getComponent(Player)!;
                 player.init(playerState, playerState.id === this.gameManager.selfPlayerId)
 
+                for(var i = 0; i < 4; i++) {
+                    if(this._playerInfoNodeUsedArray[i] == false) {
+                        this._playerInfoNodeUsedArray[i] = true;
+                        this._playerInfoNodeMap[playerState.id] = i;
+                        break;
+                    }
+
+                }
+                 
                 // 摄像机拍摄自己
                 if (playerState.id === this.gameManager.selfPlayerId) {
                     this.camera.focusTarget = node;
+                }
+            }
+
+            let lableIdx: number = this._playerInfoNodeMap[playerState.id];
+            if(lableIdx !== undefined && lableIdx >= 0 && lableIdx < this._playerInfoNodeArray.length) {
+                let lbNode: LabelComponent = this._playerInfoNodeArray[lableIdx];
+                if(lbNode) {
+                    let readyState: string = playerState.isReady ? "ready" : "not ready";
+
+                    lbNode.string = "ID: " + playerState.id + "  " + readyState + " role: " + playerState.playerRole;
+                    if(this.gameManager.selfPlayerId == playerState.id) {
+                        lbNode.color = new Color(214, 132, 53, 255);
+                    }
                 }
             }
 
@@ -123,6 +180,14 @@ export class GameScene extends Component {
             if (!this.gameManager.state.players.find(v => v.id === player.playerId)) {
                 player.node.removeFromParent();
                 delete this._playerInstances[player.playerId];
+
+                for(var idx = 0; idx < 4; idx++) {
+                    if(this._playerInfoNodeMap[player.playerId] == idx) {
+                        this._playerInfoNodeUsedArray[idx] = false;
+                        delete this._playerInfoNodeMap[player.playerId];
+                        this._playerInfoNodeArray[idx].string = "ID: -";
+                    }
+                }
             }
         }
     }
@@ -148,6 +213,26 @@ export class GameScene extends Component {
         this.arrows.addChild(node);
         arrow = this._arrowInstances[arrowState.id] = node.getComponent(Arrow)!;
         arrow.init(arrowState, playerNode.position, this.gameManager.state.now);
+    }
+
+    onBtnReady() {
+        let playerState = this.gameManager.state.players.find(v => v.id === this.gameManager.selfPlayerId);
+        if (!playerState) {
+            return;
+        }
+
+        let playerNode = this._playerInstances[this.gameManager.selfPlayerId]?.node;
+        if (!playerNode) {
+            return;
+        }
+        
+        this.btnReady.getComponent(UIOpacity)!.opacity = 0;
+
+        playerNode.getComponent(Player)?.setReady(true);
+
+        this.gameManager.ready();
+
+        
     }
 
     onBtnAttack() {
@@ -181,7 +266,26 @@ export class GameScene extends Component {
             this.btnAttack.getComponent(Button)!.interactable = true;
             this.btnAttack.getComponent(UIOpacity)!.opacity = 255;
         }, 1)
+
     }
+
+    onBtnDoTask() {
+        let playerState = this.gameManager.state.players.find(v => v.id === this.gameManager.selfPlayerId);
+        if (!playerState) {
+            return;
+        }
+
+        let playerNode = this._playerInstances[this.gameManager.selfPlayerId]?.node;
+        if (!playerNode) {
+            return;
+        }
+
+        // 发送输入
+        this.gameManager.sendClientInput({
+            type: 'DoTask',
+            taskId: randomRangeInt(1, 11)
+        })
+    }    
 
     private _updateAttackIndicator() {
         let playerState = this.gameManager.state.players.find(v => v.id === this.gameManager.selfPlayerId);
@@ -197,5 +301,32 @@ export class GameScene extends Component {
         // 攻击落点位置（表现层坐标）
         let sceneTargetPos = playerNode.position.clone().add(playerNode.forward.clone().normalize().multiplyScalar(gameConfig.arrowDistance));
         this.attackPosIndicator.setPosition(sceneTargetPos.x, 0.1, sceneTargetPos.z);
+    }
+
+    private _updateUIInfo() {
+        let playerState = this.gameManager.state.players.find(v => v.id === this.gameManager.selfPlayerId);
+        if (!playerState) {
+            return;
+        }
+
+        //update button state
+        if(playerState.playerRole == EnumPlayerRole.Impostor) {
+            this.btnDoTask.active = false;
+            this.btnAttack.active = true;
+
+        } else if(playerState.playerRole != EnumPlayerRole.Init) {
+            this.btnDoTask.active = true;
+            this.btnAttack.active = false;
+        }
+
+
+        let taskFinishNum: number = 0;
+        
+        this.gameManager.state.room.taskProcess.forEach((v) => {
+            taskFinishNum += (v == true) ? 1 : 0;
+        })
+
+        this.barTaskProcess.progress = taskFinishNum / 10;
+
     }
 }

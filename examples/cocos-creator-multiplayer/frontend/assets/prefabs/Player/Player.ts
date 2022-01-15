@@ -15,8 +15,12 @@ export class Player extends Component {
     mesh!: MeshRenderer;
     @property(Texture2D)
     texSelf!: Texture2D;
+
     @property(Texture2D)
     texOther!: Texture2D;
+
+    @property(Texture2D)
+    texInit!: Texture2D;
 
     playerId!: number;
     isSelf = false;
@@ -33,6 +37,16 @@ export class Player extends Component {
     init(state: PlayerState, isSelf: boolean) {
         this.playerId = state.id;
         this.isSelf = isSelf;
+
+        if(this.isSelf) {
+            this.mesh.material!.setProperty('mainTexture', this.texInit);
+        } else {
+            this.mesh.material!.setProperty('mainTexture', this.texOther);
+        }
+        // this.mesh.material!.setProperty('mainTexture', this.isSelf ? this.texSelf : this.texOther);
+    }
+
+    setReady(isReady: boolean) {
         this.mesh.material!.setProperty('mainTexture', this.isSelf ? this.texSelf : this.texOther);
     }
 

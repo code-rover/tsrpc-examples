@@ -73,6 +73,32 @@ export class GameManager {
         this.selfPlayerId = ret.res.playerId;
     }
 
+    async ready(): Promise<void> {
+        if (!this.client.isConnected) {
+            let resConnect = await this.client.connect();
+            if (!resConnect.isSucc) {
+                await new Promise(rs => { setTimeout(rs, 2000) })
+                return this.join();
+            }
+        }
+
+        let ret = await this.client.callApi('Ready', {isReady: true});
+
+        if (!ret.isSucc) {
+            if (confirm(`准备失败\n${ret.err.message}\n是否重试 ?`)) {
+                return this.ready();
+            }
+            else {
+                return;
+            }
+        }
+
+
+        // this.gameSystem.reset(ret.res.gameState);
+        // this.lastServerState = Object.merge(ret.res.gameState);
+        // this.lastRecvSetverStateTime = Date.now();
+    }
+
     private _onServerSync(frame: MsgFrame) {
         // 回滚至上一次的权威状态
         this.gameSystem.reset(this.lastServerState);

@@ -1,6 +1,7 @@
 import { ServiceProto } from 'tsrpc-proto';
 import { MsgClientInput } from './client/MsgClientInput';
 import { ReqJoin, ResJoin } from './PtlJoin';
+import { ReqReady, ResReady } from './PtlReady';
 import { MsgFrame } from './server/MsgFrame';
 
 export interface ServiceType {
@@ -8,6 +9,10 @@ export interface ServiceType {
         "Join": {
             req: ReqJoin,
             res: ResJoin
+        },
+        "Ready": {
+            req: ReqReady,
+            res: ResReady
         }
     },
     msg: {
@@ -17,6 +22,7 @@ export interface ServiceType {
 }
 
 export const serviceProto: ServiceProto<ServiceType> = {
+    "version": 7,
     "services": [
         {
             "id": 0,
@@ -26,6 +32,11 @@ export const serviceProto: ServiceProto<ServiceType> = {
         {
             "id": 1,
             "name": "Join",
+            "type": "api"
+        },
+        {
+            "id": 3,
+            "name": "Ready",
             "type": "api"
         },
         {
@@ -80,6 +91,19 @@ export const serviceProto: ServiceProto<ServiceType> = {
                         "target": {
                             "type": "Reference",
                             "target": "../game/GameSystem/PlayerAttack"
+                        },
+                        "keys": [
+                            "playerId"
+                        ],
+                        "type": "Omit"
+                    }
+                },
+                {
+                    "id": 2,
+                    "type": {
+                        "target": {
+                            "type": "Reference",
+                            "target": "../game/GameSystem/DoTask"
                         },
                         "keys": [
                             "playerId"
@@ -189,6 +213,33 @@ export const serviceProto: ServiceProto<ServiceType> = {
                 }
             ]
         },
+        "../game/GameSystem/DoTask": {
+            "type": "Interface",
+            "properties": [
+                {
+                    "id": 0,
+                    "name": "type",
+                    "type": {
+                        "type": "Literal",
+                        "literal": "DoTask"
+                    }
+                },
+                {
+                    "id": 1,
+                    "name": "taskId",
+                    "type": {
+                        "type": "Number"
+                    }
+                },
+                {
+                    "id": 2,
+                    "name": "playerId",
+                    "type": {
+                        "type": "Number"
+                    }
+                }
+            ]
+        },
         "PtlJoin/ReqJoin": {
             "type": "Interface"
         },
@@ -250,6 +301,14 @@ export const serviceProto: ServiceProto<ServiceType> = {
                     "type": {
                         "type": "Number"
                     }
+                },
+                {
+                    "id": 4,
+                    "name": "room",
+                    "type": {
+                        "type": "Reference",
+                        "target": "../game/state/RoomState/RoomState"
+                    }
                 }
             ]
         },
@@ -261,6 +320,14 @@ export const serviceProto: ServiceProto<ServiceType> = {
                     "name": "id",
                     "type": {
                         "type": "Number"
+                    }
+                },
+                {
+                    "id": 4,
+                    "name": "playerRole",
+                    "type": {
+                        "type": "Reference",
+                        "target": "../game/EnumPlayerRole/EnumPlayerRole"
                     }
                 },
                 {
@@ -287,12 +354,40 @@ export const serviceProto: ServiceProto<ServiceType> = {
                     }
                 },
                 {
+                    "id": 3,
+                    "name": "isReady",
+                    "type": {
+                        "type": "Boolean"
+                    }
+                },
+                {
                     "id": 2,
                     "name": "dizzyEndTime",
                     "type": {
                         "type": "Number"
                     },
                     "optional": true
+                }
+            ]
+        },
+        "../game/EnumPlayerRole/EnumPlayerRole": {
+            "type": "Enum",
+            "members": [
+                {
+                    "id": 0,
+                    "value": 0
+                },
+                {
+                    "id": 1,
+                    "value": 1
+                },
+                {
+                    "id": 2,
+                    "value": 2
+                },
+                {
+                    "id": 3,
+                    "value": 3
                 }
             ]
         },
@@ -345,6 +440,76 @@ export const serviceProto: ServiceProto<ServiceType> = {
                 }
             ]
         },
+        "../game/state/RoomState/RoomState": {
+            "type": "Interface",
+            "properties": [
+                {
+                    "id": 0,
+                    "name": "id",
+                    "type": {
+                        "type": "Number"
+                    }
+                },
+                {
+                    "id": 1,
+                    "name": "state",
+                    "type": {
+                        "type": "Reference",
+                        "target": "../game/EnumRoomState/EnumRoomState"
+                    }
+                },
+                {
+                    "id": 2,
+                    "name": "taskProcess",
+                    "type": {
+                        "type": "Array",
+                        "elementType": {
+                            "type": "Boolean"
+                        }
+                    }
+                }
+            ]
+        },
+        "../game/EnumRoomState/EnumRoomState": {
+            "type": "Enum",
+            "members": [
+                {
+                    "id": 0,
+                    "value": 0
+                },
+                {
+                    "id": 1,
+                    "value": 1
+                },
+                {
+                    "id": 2,
+                    "value": 2
+                },
+                {
+                    "id": 3,
+                    "value": 3
+                },
+                {
+                    "id": 4,
+                    "value": 4
+                }
+            ]
+        },
+        "PtlReady/ReqReady": {
+            "type": "Interface",
+            "properties": [
+                {
+                    "id": 0,
+                    "name": "isReady",
+                    "type": {
+                        "type": "Boolean"
+                    }
+                }
+            ]
+        },
+        "PtlReady/ResReady": {
+            "type": "Interface"
+        },
         "server/MsgFrame/MsgFrame": {
             "type": "Interface",
             "properties": [
@@ -391,6 +556,34 @@ export const serviceProto: ServiceProto<ServiceType> = {
                     "type": {
                         "type": "Reference",
                         "target": "../game/GameSystem/PlayerJoin"
+                    }
+                },
+                {
+                    "id": 5,
+                    "type": {
+                        "type": "Reference",
+                        "target": "../game/GameSystem/PlayerReady"
+                    }
+                },
+                {
+                    "id": 7,
+                    "type": {
+                        "type": "Reference",
+                        "target": "../game/GameSystem/Grouping"
+                    }
+                },
+                {
+                    "id": 6,
+                    "type": {
+                        "type": "Reference",
+                        "target": "../game/GameSystem/GameStart"
+                    }
+                },
+                {
+                    "id": 8,
+                    "type": {
+                        "type": "Reference",
+                        "target": "../game/GameSystem/DoTask"
                     }
                 },
                 {
@@ -448,6 +641,73 @@ export const serviceProto: ServiceProto<ServiceType> = {
                                 }
                             }
                         ]
+                    }
+                }
+            ]
+        },
+        "../game/GameSystem/PlayerReady": {
+            "type": "Interface",
+            "properties": [
+                {
+                    "id": 0,
+                    "name": "type",
+                    "type": {
+                        "type": "Literal",
+                        "literal": "PlayerReady"
+                    }
+                },
+                {
+                    "id": 1,
+                    "name": "playerId",
+                    "type": {
+                        "type": "Number"
+                    }
+                },
+                {
+                    "id": 2,
+                    "name": "isReady",
+                    "type": {
+                        "type": "Boolean"
+                    }
+                }
+            ]
+        },
+        "../game/GameSystem/Grouping": {
+            "type": "Interface",
+            "properties": [
+                {
+                    "id": 0,
+                    "name": "type",
+                    "type": {
+                        "type": "Literal",
+                        "literal": "Grouping"
+                    }
+                },
+                {
+                    "id": 1,
+                    "name": "groupResult",
+                    "type": {
+                        "type": "Interface",
+                        "indexSignature": {
+                            "keyType": "Number",
+                            "type": {
+                                "type": "Reference",
+                                "target": "../game/EnumPlayerRole/EnumPlayerRole"
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "../game/GameSystem/GameStart": {
+            "type": "Interface",
+            "properties": [
+                {
+                    "id": 0,
+                    "name": "type",
+                    "type": {
+                        "type": "Literal",
+                        "literal": "GameStart"
                     }
                 }
             ]

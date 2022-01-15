@@ -1,6 +1,9 @@
 import { gameConfig } from "./gameConfig";
 import { ArrowState } from "./state/ArrowState";
 import { PlayerState } from "./state/PlayerState";
+import { RoomState } from "./state/RoomState";
+import { EnumPlayerRole } from "./EnumPlayerRole";
+import { EnumRoomState } from "./EnumRoomState";
 
 // 状态定义
 export interface GameSystemState {
@@ -8,10 +11,14 @@ export interface GameSystemState {
     now: number,
     // 玩家
     players: PlayerState[],
+
     // 飞行中的箭矢
     arrows: ArrowState[],
     // 箭矢的 ID 生成
-    nextArrowId: number
+    nextArrowId: number,
+
+    //房间状态
+    room: RoomState
 }
 
 /**
@@ -24,7 +31,8 @@ export class GameSystem {
         now: 0,
         players: [],
         arrows: [],
-        nextArrowId: 1
+        nextArrowId: 1,
+        room: {id: 0, state: EnumRoomState.Init, taskProcess: []}
     }
     get state(): Readonly<GameSystemState> {
         return this._state
@@ -65,8 +73,40 @@ export class GameSystem {
         else if (input.type === 'PlayerJoin') {
             this.state.players.push({
                 id: input.playerId,
-                pos: { ...input.pos }
+                pos: { ...input.pos },
+                isReady: false,
+                playerRole: EnumPlayerRole.Init,
             })
+        }
+        else if (input.type === 'PlayerReady') {
+            // console.log("user ready");
+            let player = this._state.players.find(v => v.id === input.playerId);
+            if (player) {
+                player.isReady = input.isReady;
+            }
+            
+        }
+        else if (input.type === 'Grouping') {
+            // console.log("Grouping input.groupResult:" + input.groupResult);
+            for(var i = 0; i < this._state.players.length; i++) {
+                this._state.players[i].playerRole = input.groupResult[this._state.players[i].id];
+            }
+            
+        }
+
+        else if (input.type === 'GameStart') {
+            console.log("GameStart");
+            this._state.room.state = EnumRoomState.Start;
+            
+        }
+        else if (input.type === 'DoTask') {
+            console.log("DoTask");
+            if(input.taskId < 0 || input.taskId > 100) {
+                return;
+            }
+
+            this._state.room.taskProcess[input.taskId] = true;
+
         }
         else if (input.type === 'PlayerLeave') {
             this.state.players.remove(v => v.id === input.playerId);
@@ -126,6 +166,29 @@ export interface PlayerJoin {
     playerId: number,
     pos: { x: number, y: number }
 }
+
+export interface PlayerReady {
+    type: 'PlayerReady',
+    playerId: number,
+    isReady: boolean,
+}
+
+export interface Grouping {
+    type: 'Grouping',
+    groupResult: {[playerId: number]: EnumPlayerRole}
+}
+
+export interface GameStart {
+    type: 'GameStart',
+}
+
+export interface DoTask {
+    type: 'DoTask',
+    taskId: number,
+    playerId: number
+}
+
+
 export interface PlayerLeave {
     type: 'PlayerLeave',
     playerId: number
@@ -139,5 +202,9 @@ export interface TimePast {
 export type GameSystemInput = PlayerMove
     | PlayerAttack
     | PlayerJoin
+    | PlayerReady
+    | Grouping
+    | GameStart
+    | DoTask
     | PlayerLeave
     | TimePast;
