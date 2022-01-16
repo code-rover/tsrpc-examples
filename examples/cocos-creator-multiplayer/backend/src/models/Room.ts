@@ -23,6 +23,10 @@ export class Room {
 
     // 帧同步频率，次数/秒
     syncRate = gameConfig.syncRate;
+
+    //room tick
+    tickRate = gameConfig.tickRate;
+
     nextPlayerId = 1;
 
     gameSystem = new GameSystem();
@@ -32,10 +36,14 @@ export class Room {
     pendingInputs: GameSystemInput[] = [];
     playerLastSn: { [playerId: number]: number | undefined } = {};
     lastSyncTime?: number;
+    lastTickTime?: number;
+    groupingTime?: number;   //分组时间
+    waitGameStartTime: number = 5;   //分组5秒后开始游戏
 
     constructor(server: WsServer<ServiceType>) {
         this.server = server;
         setInterval(() => { this.sync() }, 1000 / this.syncRate);
+        setInterval(() => { this.tick() }, 1000 / this.tickRate);
     }
 
     /**
@@ -89,16 +97,23 @@ export class Room {
             }
             this.applyInput(input);
 
-            // let input: GameStart = {
-            //     type: 'GameStart',
-            // }
-            // this.applyInput(input);
+            this.groupingTime = process.uptime();
         }
-
     }
 
+    private tick() {
+        if(this.groupingTime) {
+            if(process.uptime() >= this.groupingTime + this.waitGameStartTime) {
+                let input: GameStart = {
+                    type: 'GameStart',
+                }
+                this.applyInput(input);
+            }
+        }
 
 
+
+    }
 
     /**
      * 分组逻辑
@@ -167,6 +182,7 @@ export class Room {
             dt: now - (this.lastSyncTime ?? now)
         });
         this.lastSyncTime = now;
+        this.tick();
 
         // 发送同步帧
         this.conns.forEach(v => {

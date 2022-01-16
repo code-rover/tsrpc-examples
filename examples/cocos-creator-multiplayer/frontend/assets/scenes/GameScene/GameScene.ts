@@ -10,6 +10,7 @@ import { ArrowState } from '../../scripts/shared/game/state/ArrowState';
 
 import * as fgui from "fairygui-cc"
 import { EnumPlayerRole } from '../../scripts/shared/game/EnumPlayerRole';
+import { EnumRoomState } from '../../scripts/shared/game/EnumRoomState';
 
 const { ccclass, property } = _decorator;
 
@@ -56,6 +57,9 @@ export class GameScene extends Component {
     @property(ProgressBarComponent)
     barTaskProcess!: ProgressBarComponent;
 
+    @property(LabelComponent)
+    lbGameStart!: LabelComponent;
+
     gameManager!: GameManager;
 
     private _playerInstances: { [playerId: number]: Player | undefined } = {};
@@ -67,12 +71,16 @@ export class GameScene extends Component {
     private _playerInfoNodeArray :LabelComponent[] =  []
     private _playerInfoNodeUsedArray :boolean[] = [false, false, false, false]
 
+    private _groupingStateFlag = false;
+    private _startStateFlag = false;
+
     onLoad() {
         (window as any).game = this;
 
         //任务按钮默认关闭
         this.btnDoTask.active = false;
         this.btnAttack.active = true;
+        this.lbGameStart._enabled = false;
 
         this.attackPosIndicator.getComponent(MeshRenderer)!.material!.setProperty('mainColor', Color.CYAN);
         this._playerInfoNodeArray = [this.lbPlayerInfo_1, this.lbPlayerInfo_2, this.lbPlayerInfo_3, this.lbPlayerInfo_4];
@@ -327,6 +335,29 @@ export class GameScene extends Component {
         })
 
         this.barTaskProcess.progress = taskFinishNum / 10;
+
+        if(!this._groupingStateFlag && !this._groupingStateFlag && this.gameManager.state.room.state == EnumRoomState.Grouping) {
+            this._groupingStateFlag = true;
+            this.lbGameStart.string = "Grouping ...";
+            this.lbGameStart.enabled = true;
+
+            // let counter = 5;
+            // this.schedule(() => {
+            //     this.lbGameStart.string = counter.toString()
+            //     counter--
+            // }, 1, 5)    
+        }
+
+        if(!this._startStateFlag && this._groupingStateFlag && this.gameManager.state.room.state == EnumRoomState.Start) {
+            this._startStateFlag = true;
+
+            this.lbGameStart.enabled = true;
+            this.lbGameStart.string = "Game Start";
+
+            this.scheduleOnce(()=>{
+                this.lbGameStart.enabled = false;
+            }, 4)
+        }
 
     }
 }

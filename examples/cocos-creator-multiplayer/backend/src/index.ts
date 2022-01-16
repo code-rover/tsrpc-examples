@@ -1,13 +1,17 @@
 import 'k8w-extend-native';
 import * as path from "path";
 import { WsConnection, WsServer } from "tsrpc";
+import { myLogger } from './Logger';
 import { Room } from './models/Room';
 import { serviceProto, ServiceType } from './shared/protocols/serviceProto';
+
+
 
 // 创建 TSRPC WebSocket Server
 export const server = new WsServer(serviceProto, {
     port: 3000,
-    json: true
+    json: true,
+    logger: myLogger,
 });
 
 // 断开连接后退出房间

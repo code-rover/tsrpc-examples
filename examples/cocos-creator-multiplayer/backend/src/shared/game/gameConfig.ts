@@ -1,6 +1,8 @@
 export const gameConfig = {
     syncRate: 10,
 
+    tickRate: 1,   //1 time per sec
+
     moveSpeed: 10,
 
     // 箭矢飞行时间（毫秒）

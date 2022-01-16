@@ -32,7 +32,7 @@ export class GameSystem {
         players: [],
         arrows: [],
         nextArrowId: 1,
-        room: {id: 0, state: EnumRoomState.Init, taskProcess: []}
+        room: {id: 0, state: EnumRoomState.Init, taskProcess: [], winRole: EnumPlayerRole.Init}
     }
     get state(): Readonly<GameSystemState> {
         return this._state
@@ -51,13 +51,19 @@ export class GameSystem {
                 return;
             }
 
-            if (player.dizzyEndTime && player.dizzyEndTime > this._state.now) {
+            if(player.isDead) {
                 return;
             }
+  
             player.pos.x += input.speed.x * input.dt;
             player.pos.y += input.speed.y * input.dt;
         }
         else if (input.type === 'PlayerAttack') {
+            if(this._state.room.state != EnumRoomState.Start) {
+                console.log("can't do task state invalid");
+                return;
+            }
+
             let player = this._state.players.find(v => v.id === input.playerId);
             if (player) {
                 let newArrow: ArrowState = {
@@ -71,14 +77,24 @@ export class GameSystem {
             }
         }
         else if (input.type === 'PlayerJoin') {
+            if(this.state.room.state != EnumRoomState.Init) {
+                console.log("room PlayerJoin state invalid %d", this.state.room.state);
+                return;
+            }
+
             this.state.players.push({
                 id: input.playerId,
                 pos: { ...input.pos },
                 isReady: false,
                 playerRole: EnumPlayerRole.Init,
+                isDead: false
             })
         }
         else if (input.type === 'PlayerReady') {
+            if(this.state.room.state != EnumRoomState.Init) {
+                console.log("room PlayerReady state invalid %d", this.state.room.state);
+                return;
+            }
             // console.log("user ready");
             let player = this._state.players.find(v => v.id === input.playerId);
             if (player) {
@@ -87,6 +103,8 @@ export class GameSystem {
             
         }
         else if (input.type === 'Grouping') {
+            this._state.room.state = EnumRoomState.Grouping;
+
             // console.log("Grouping input.groupResult:" + input.groupResult);
             for(var i = 0; i < this._state.players.length; i++) {
                 this._state.players[i].playerRole = input.groupResult[this._state.players[i].id];
@@ -100,7 +118,12 @@ export class GameSystem {
             
         }
         else if (input.type === 'DoTask') {
-            console.log("DoTask");
+            // this..logger.debug("DoTask %d", input.taskId);
+            if(this._state.room.state != EnumRoomState.Start) {
+                console.log("can't do task state invalid");
+                return;
+            }
+
             if(input.taskId < 0 || input.taskId > 100) {
                 return;
             }
@@ -110,6 +133,10 @@ export class GameSystem {
         }
         else if (input.type === 'PlayerLeave') {
             this.state.players.remove(v => v.id === input.playerId);
+        }
+        else if (input.type === 'GameEnd') {
+            this._state.room.state = EnumRoomState.End;
+            this._state.room.winRole = input.winRole
         }
         else if (input.type === 'TimePast') {
             this._state.now += input.dt;
@@ -123,8 +150,7 @@ export class GameSystem {
                         return (v.pos.x - arrow.targetPos.x) * (v.pos.x - arrow.targetPos.x) + (v.pos.y - arrow.targetPos.y) * (v.pos.y - arrow.targetPos.y) <= gameConfig.arrowAttackRadius * gameConfig.arrowAttackRadius
                     });
                     damagedPlayers.forEach(p => {
-                        // 设置击晕状态
-                        p.dizzyEndTime = this._state.now + gameConfig.arrowDizzyTime;
+                        p.isDead = true;
 
                         // Event
                     })
@@ -182,6 +208,11 @@ export interface GameStart {
     type: 'GameStart',
 }
 
+export interface GameEnd {
+    type: 'GameEnd',
+    winRole: EnumPlayerRole
+}
+
 export interface DoTask {
     type: 'DoTask',
     taskId: number,
@@ -207,4 +238,5 @@ export type GameSystemInput = PlayerMove
     | GameStart
     | DoTask
     | PlayerLeave
+    | GameEnd
     | TimePast;

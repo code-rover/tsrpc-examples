@@ -36,11 +36,11 @@
     "_active": true,
     "_components": [],
     "_prefab": {
-      "__id__": 118
+      "__id__": 121
     },
     "autoReleaseAssets": false,
     "_globals": {
-      "__id__": 121
+      "__id__": 124
     },
     "_id": "0d3889f6-dc9c-424e-b8cd-6fa78d63af15"
   },
@@ -805,21 +805,24 @@
       },
       {
         "__id__": 107
+      },
+      {
+        "__id__": 114
       }
     ],
     "_active": true,
     "_components": [
       {
-        "__id__": 114
-      },
-      {
-        "__id__": 115
-      },
-      {
-        "__id__": 116
-      },
-      {
         "__id__": 117
+      },
+      {
+        "__id__": 118
+      },
+      {
+        "__id__": 119
+      },
+      {
+        "__id__": 120
       }
     ],
     "_prefab": null,
@@ -1169,7 +1172,7 @@
     "_lpos": {
       "__type__": "cc.Vec3",
       "x": 264.283,
-      "y": -478.226,
+      "y": -248.226,
       "z": 0
     },
     "_lrot": {
@@ -1462,7 +1465,7 @@
     "_left": 0,
     "_right": 40.716999999999985,
     "_top": 0,
-    "_bottom": 118.774,
+    "_bottom": 348.774,
     "_horizontalCenter": 0,
     "_verticalCenter": 0,
     "_isAbsLeft": true,
@@ -2273,7 +2276,7 @@
     "_lpos": {
       "__type__": "cc.Vec3",
       "x": 263.283,
-      "y": -389.226,
+      "y": -203.226,
       "z": 0
     },
     "_lrot": {
@@ -2566,7 +2569,7 @@
     "_left": 0,
     "_right": 41.716999999999985,
     "_top": 0,
-    "_bottom": 207.774,
+    "_bottom": 393.774,
     "_horizontalCenter": 0,
     "_verticalCenter": 0,
     "_isAbsLeft": true,
@@ -2819,6 +2822,111 @@
     "_id": "04ihYP9URGe6svlnZseieu"
   },
   {
+    "__type__": "cc.Node",
+    "_name": "lbGameStart",
+    "_objFlags": 0,
+    "_parent": {
+      "__id__": 45
+    },
+    "_children": [],
+    "_active": true,
+    "_components": [
+      {
+        "__id__": 115
+      },
+      {
+        "__id__": 116
+      }
+    ],
+    "_prefab": null,
+    "_lpos": {
+      "__type__": "cc.Vec3",
+      "x": 0,
+      "y": 165.031,
+      "z": 0
+    },
+    "_lrot": {
+      "__type__": "cc.Quat",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "w": 1
+    },
+    "_lscale": {
+      "__type__": "cc.Vec3",
+      "x": 1,
+      "y": 1,
+      "z": 1
+    },
+    "_layer": 33554432,
+    "_euler": {
+      "__type__": "cc.Vec3",
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "_id": "12fKK5m9BIP4dCx8RB+8Ik"
+  },
+  {
+    "__type__": "cc.UITransform",
+    "_name": "",
+    "_objFlags": 0,
+    "node": {
+      "__id__": 114
+    },
+    "_enabled": true,
+    "__prefab": null,
+    "_contentSize": {
+      "__type__": "cc.Size",
+      "width": 533.54,
+      "height": 126
+    },
+    "_anchorPoint": {
+      "__type__": "cc.Vec2",
+      "x": 0.5,
+      "y": 0.5
+    },
+    "_id": "1aTiTBDGRPmZKa8IrFaNL/"
+  },
+  {
+    "__type__": "cc.Label",
+    "_name": "",
+    "_objFlags": 0,
+    "node": {
+      "__id__": 114
+    },
+    "_enabled": true,
+    "__prefab": null,
+    "_visFlags": 0,
+    "_customMaterial": null,
+    "_srcBlendFactor": 2,
+    "_dstBlendFactor": 4,
+    "_color": {
+      "__type__": "cc.Color",
+      "r": 255,
+      "g": 0,
+      "b": 0,
+      "a": 255
+    },
+    "_string": "Game Start",
+    "_horizontalAlign": 1,
+    "_verticalAlign": 1,
+    "_actualFontSize": 100,
+    "_fontSize": 100,
+    "_fontFamily": "Arial",
+    "_lineHeight": 100,
+    "_overflow": 0,
+    "_enableWrapText": true,
+    "_font": null,
+    "_isSystemFontUsed": true,
+    "_isItalic": false,
+    "_isBold": true,
+    "_isUnderline": false,
+    "_underlineHeight": 2,
+    "_cacheMode": 0,
+    "_id": "b4gUvtYxBBAqmxuK2whcrV"
+  },
+  {
     "__type__": "cc.UITransform",
     "_name": "",
     "_objFlags": 0,
@@ -2937,6 +3045,9 @@
     "barTaskProcess": {
       "__id__": 113
     },
+    "lbGameStart": {
+      "__id__": 116
+    },
     "_id": "86PJf2PFRK5LGUONuKqmzS"
   },
   {
@@ -2944,14 +3055,14 @@
     "fileId": "",
     "targetOverrides": [
       {
-        "__id__": 119
+        "__id__": 122
       }
     ]
   },
   {
     "__type__": "cc.TargetOverrideInfo",
     "source": {
-      "__id__": 117
+      "__id__": 120
     },
     "sourceInfo": null,
     "propertyPath": [
@@ -2961,7 +3072,7 @@
       "__id__": 48
     },
     "targetInfo": {
-      "__id__": 120
+      "__id__": 123
     }
   },
   {
@@ -2973,16 +3084,16 @@
   {
     "__type__": "cc.SceneGlobals",
     "ambient": {
-      "__id__": 122
+      "__id__": 125
     },
     "shadows": {
-      "__id__": 123
+      "__id__": 126
     },
     "_skybox": {
-      "__id__": 124
+      "__id__": 127
     },
     "fog": {
-      "__id__": 125
+      "__id__": 128
     }
   },
   {

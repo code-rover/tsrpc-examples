@@ -22,7 +22,7 @@ export interface ServiceType {
 }
 
 export const serviceProto: ServiceProto<ServiceType> = {
-    "version": 7,
+    "version": 10,
     "services": [
         {
             "id": 0,
@@ -361,12 +361,11 @@ export const serviceProto: ServiceProto<ServiceType> = {
                     }
                 },
                 {
-                    "id": 2,
-                    "name": "dizzyEndTime",
+                    "id": 5,
+                    "name": "isDead",
                     "type": {
-                        "type": "Number"
-                    },
-                    "optional": true
+                        "type": "Boolean"
+                    }
                 }
             ]
         },
@@ -444,7 +443,7 @@ export const serviceProto: ServiceProto<ServiceType> = {
             "type": "Interface",
             "properties": [
                 {
-                    "id": 0,
+                    "id": 4,
                     "name": "id",
                     "type": {
                         "type": "Number"
@@ -466,6 +465,14 @@ export const serviceProto: ServiceProto<ServiceType> = {
                         "elementType": {
                             "type": "Boolean"
                         }
+                    }
+                },
+                {
+                    "id": 3,
+                    "name": "winRole",
+                    "type": {
+                        "type": "Reference",
+                        "target": "../game/EnumPlayerRole/EnumPlayerRole"
                     }
                 }
             ]
@@ -591,6 +598,13 @@ export const serviceProto: ServiceProto<ServiceType> = {
                     "type": {
                         "type": "Reference",
                         "target": "../game/GameSystem/PlayerLeave"
+                    }
+                },
+                {
+                    "id": 9,
+                    "type": {
+                        "type": "Reference",
+                        "target": "../game/GameSystem/GameEnd"
                     }
                 },
                 {
@@ -728,6 +742,27 @@ export const serviceProto: ServiceProto<ServiceType> = {
                     "name": "playerId",
                     "type": {
                         "type": "Number"
+                    }
+                }
+            ]
+        },
+        "../game/GameSystem/GameEnd": {
+            "type": "Interface",
+            "properties": [
+                {
+                    "id": 0,
+                    "name": "type",
+                    "type": {
+                        "type": "Literal",
+                        "literal": "GameEnd"
+                    }
+                },
+                {
+                    "id": 1,
+                    "name": "winRole",
+                    "type": {
+                        "type": "Reference",
+                        "target": "../game/EnumPlayerRole/EnumPlayerRole"
                     }
                 }
             ]

@@ -10,7 +10,9 @@ export interface PlayerState {
     pos: { x: number, y: number },
 
     isReady: boolean,
+
+    isDead: boolean
     
     // 晕眩结束时间
-    dizzyEndTime?: number,
+    // dizzyEndTime?: number,
 }

@@ -54,8 +54,9 @@ export class Player extends Component {
         this.state = state;
         this.now = now;
 
-        if (state.dizzyEndTime && state.dizzyEndTime >= now) {
+        if (state.isDead) {
             this.setStatus('dizzy');
+            this.mesh.material!.setProperty('mainTexture', this.texInit);
         }
         else {
             if (this._lastAni === 'win') {
@@ -113,8 +114,10 @@ export class Player extends Component {
     private _lastAni?: string;
     setStatus(status: 'run' | 'idle' | 'dizzy') {
         let aniName: string = status;
-        if (this.state.dizzyEndTime && this.state.dizzyEndTime >= this.now) {
-            aniName = 'win';
+        if (this.state.isDead){
+            aniName = 'dizzy';  //win
+            this.ani.pause();
+            return;
         }
 
         if (this._lastAni === aniName) {
