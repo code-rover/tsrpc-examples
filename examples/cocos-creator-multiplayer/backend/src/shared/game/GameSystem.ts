@@ -32,7 +32,7 @@ export class GameSystem {
         players: [],
         arrows: [],
         nextArrowId: 1,
-        room: {id: 0, state: EnumRoomState.Init, taskProcess: [], winRole: EnumPlayerRole.Init}
+        room: {id: 0, state: EnumRoomState.Init, taskProcess: 0, isImposterWin: false}
     }
     get state(): Readonly<GameSystemState> {
         return this._state
@@ -75,19 +75,30 @@ export class GameSystem {
                 this._state.arrows.push(newArrow);
                 this.onNewArrow.forEach(v => v(newArrow));
             }
+
         }
         else if (input.type === 'PlayerJoin') {
-            if(this.state.room.state != EnumRoomState.Init) {
-                console.log("room PlayerJoin state invalid %d", this.state.room.state);
-                return;
+            if(this.state.room.state == EnumRoomState.End) {
+                this._state = {
+                    now: 0,
+                    players: [],
+                    arrows: [],
+                    nextArrowId: 1,
+                    room: {id: 0, state: EnumRoomState.Init, taskProcess: 0, isImposterWin: false}
+                }
             }
+            // if(this.state.room.state != EnumRoomState.Init) {
+            //     console.log("room PlayerJoin state invalid %d", this.state.room.state);
+            //     return;
+            // }
 
             this.state.players.push({
                 id: input.playerId,
                 pos: { ...input.pos },
                 isReady: false,
                 playerRole: EnumPlayerRole.Init,
-                isDead: false
+                isDead: false, 
+                isOffline: false
             })
         }
         else if (input.type === 'PlayerReady') {
@@ -120,7 +131,7 @@ export class GameSystem {
         else if (input.type === 'DoTask') {
             // this..logger.debug("DoTask %d", input.taskId);
             if(this._state.room.state != EnumRoomState.Start) {
-                console.log("can't do task state invalid");
+                console.log("can't do task state invalid %d", this._state.room.state);
                 return;
             }
 
@@ -128,15 +139,27 @@ export class GameSystem {
                 return;
             }
 
-            this._state.room.taskProcess[input.taskId] = true;
+            this._state.room.taskProcess += 1
+
+            if(this._state.room.taskProcess >= 10) {
+                this._state.room.state = EnumRoomState.End;
+                this._state.room.isImposterWin = false;
+
+                let input: GameEnd = {
+                    type: 'GameEnd',
+                    isImposterWin: this._state.room.isImposterWin
+                }
+                this.applyInput(input);
+            }
 
         }
         else if (input.type === 'PlayerLeave') {
             this.state.players.remove(v => v.id === input.playerId);
+            
         }
         else if (input.type === 'GameEnd') {
             this._state.room.state = EnumRoomState.End;
-            this._state.room.winRole = input.winRole
+            this._state.room.isImposterWin = input.isImposterWin
         }
         else if (input.type === 'TimePast') {
             this._state.now += input.dt;
@@ -153,6 +176,23 @@ export class GameSystem {
                         p.isDead = true;
 
                         // Event
+                        let allKilled = true
+                        this._state.players.forEach(player => {
+                            if(!player.isDead && player.playerRole != EnumPlayerRole.Impostor) {
+                                allKilled = false
+                            }
+                        })
+
+                        if(allKilled) {
+                            this._state.room.state = EnumRoomState.End;
+                            this._state.room.isImposterWin = true;
+
+                            let input: GameEnd = {
+                                type: 'GameEnd',
+                                isImposterWin: this._state.room.isImposterWin
+                            }
+                            this.applyInput(input);
+                        }
                     })
 
                     this._state.arrows.splice(i, 1);
@@ -210,7 +250,7 @@ export interface GameStart {
 
 export interface GameEnd {
     type: 'GameEnd',
-    winRole: EnumPlayerRole
+    isImposterWin: boolean
 }
 
 export interface DoTask {

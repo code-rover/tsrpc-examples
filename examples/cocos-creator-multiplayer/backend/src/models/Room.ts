@@ -27,6 +27,9 @@ export class Room {
     //room tick
     tickRate = gameConfig.tickRate;
 
+    //游戏结束后，多久重置房间
+    resetRoomTime = 10;  
+
     nextPlayerId = 1;
 
     gameSystem = new GameSystem();
@@ -98,20 +101,61 @@ export class Room {
             this.applyInput(input);
 
             this.groupingTime = process.uptime();
-        }
-    }
 
-    private tick() {
-        if(this.groupingTime) {
-            if(process.uptime() >= this.groupingTime + this.waitGameStartTime) {
-                let input: GameStart = {
+            setTimeout(()=>{
+                 let input: GameStart = {
                     type: 'GameStart',
                 }
                 this.applyInput(input);
-            }
+            }, 5)
         }
+    }
+
+    private reset() {
+        this.gameSystem = new GameSystem();
+
+        // this.conns = [];
+        this.pendingInputs = [];
+        this.playerLastSn = {};
+        this.lastSyncTime = undefined;
+        this.lastTickTime = undefined;
+        this.groupingTime = undefined;
+    }
 
 
+    private tick() {
+        // if(this.groupingTime) {
+        //     if(process.uptime() >= this.groupingTime + this.waitGameStartTime) {
+        //         // let input: GameStart = {
+        //         //     type: 'GameStart',
+        //         // }
+        //         // this.applyInput(input);
+        //     }
+        // }
+
+        // if(this.gameSystem.state.room.state == EnumRoomState.Start  && 
+            
+        //     ) {
+
+        // }
+
+        if(this.gameSystem.state.room.state == EnumRoomState.End) {
+            // this.reset();
+
+            // this.gameSystem.state.players.forEach(player => {
+            //     player.isOffline = true;
+            // })
+
+            
+            // setTimeout(()=> {
+            //     // this.conns.removeOne(v => v.playerId === playerId);
+            //         // this.conns.forEach(conn => {
+            //         //     this.leave(conn.playerId!, conn)
+            //         // })
+
+            //     this.reset()
+            // }, this.resetRoomTime)
+        }
 
     }
 

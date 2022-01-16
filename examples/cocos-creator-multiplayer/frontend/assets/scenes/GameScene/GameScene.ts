@@ -165,6 +165,15 @@ export class GameScene extends Component {
                 }
             }
 
+            this.gameManager.state.players.forEach(v => {
+                if(v.isOffline) {
+                    let player = this._playerInstances[playerState.id];
+                    if(player) {
+                        player.enabled = false;
+                    }
+                }
+            })
+
             let lableIdx: number = this._playerInfoNodeMap[playerState.id];
             if(lableIdx !== undefined && lableIdx >= 0 && lableIdx < this._playerInfoNodeArray.length) {
                 let lbNode: LabelComponent = this._playerInfoNodeArray[lableIdx];
@@ -327,19 +336,19 @@ export class GameScene extends Component {
             this.btnAttack.active = false;
         }
 
-
-        let taskFinishNum: number = 0;
-        
-        this.gameManager.state.room.taskProcess.forEach((v) => {
-            taskFinishNum += (v == true) ? 1 : 0;
-        })
-
-        this.barTaskProcess.progress = taskFinishNum / 10;
+        // 任务进度 percent
+        this.barTaskProcess.progress = this.gameManager.state.room.taskProcess / 10;
 
         if(!this._groupingStateFlag && !this._groupingStateFlag && this.gameManager.state.room.state == EnumRoomState.Grouping) {
             this._groupingStateFlag = true;
             this.lbGameStart.string = "Grouping ...";
             this.lbGameStart.enabled = true;
+
+            let roleName = playerState?.playerRole == EnumPlayerRole.Impostor ? "Impostor" : "Crewmate";
+
+            this.scheduleOnce(()=>{
+                this.lbGameStart.string = "You are " + roleName;
+            }, 2)
 
             // let counter = 5;
             // this.schedule(() => {
@@ -357,6 +366,20 @@ export class GameScene extends Component {
             this.scheduleOnce(()=>{
                 this.lbGameStart.enabled = false;
             }, 4)
+        }
+
+        if(this.gameManager.state.room.state == EnumRoomState.End) {
+            let resStr = "x";
+            if(this.gameManager.state.room.isImposterWin) {
+                resStr = playerState.playerRole == EnumPlayerRole.Impostor ? "You Win": "You Lost";
+
+            } else {
+                resStr = playerState.playerRole == EnumPlayerRole.Impostor ? "You Lost": "You Win";
+            }
+
+            this.lbGameStart.enabled = true;
+            this.lbGameStart.string = "Game End \n " + resStr;
+
         }
 
     }

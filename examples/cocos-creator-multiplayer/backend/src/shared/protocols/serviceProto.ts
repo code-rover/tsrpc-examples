@@ -22,7 +22,7 @@ export interface ServiceType {
 }
 
 export const serviceProto: ServiceProto<ServiceType> = {
-    "version": 10,
+    "version": 15,
     "services": [
         {
             "id": 0,
@@ -366,6 +366,13 @@ export const serviceProto: ServiceProto<ServiceType> = {
                     "type": {
                         "type": "Boolean"
                     }
+                },
+                {
+                    "id": 6,
+                    "name": "isOffline",
+                    "type": {
+                        "type": "Boolean"
+                    }
                 }
             ]
         },
@@ -461,18 +468,14 @@ export const serviceProto: ServiceProto<ServiceType> = {
                     "id": 2,
                     "name": "taskProcess",
                     "type": {
-                        "type": "Array",
-                        "elementType": {
-                            "type": "Boolean"
-                        }
+                        "type": "Number"
                     }
                 },
                 {
                     "id": 3,
-                    "name": "winRole",
+                    "name": "isImposterWin",
                     "type": {
-                        "type": "Reference",
-                        "target": "../game/EnumPlayerRole/EnumPlayerRole"
+                        "type": "Boolean"
                     }
                 }
             ]
@@ -759,10 +762,9 @@ export const serviceProto: ServiceProto<ServiceType> = {
                 },
                 {
                     "id": 1,
-                    "name": "winRole",
+                    "name": "isImposterWin",
                     "type": {
-                        "type": "Reference",
-                        "target": "../game/EnumPlayerRole/EnumPlayerRole"
+                        "type": "Boolean"
                     }
                 }
             ]

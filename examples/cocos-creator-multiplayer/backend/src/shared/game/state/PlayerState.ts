@@ -12,6 +12,8 @@ export interface PlayerState {
     isReady: boolean,
 
     isDead: boolean
+
+    isOffline: boolean
     
     // 晕眩结束时间
     // dizzyEndTime?: number,
