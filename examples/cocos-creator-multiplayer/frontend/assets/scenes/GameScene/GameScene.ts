@@ -249,7 +249,9 @@ export class GameScene extends Component {
 
         this.gameManager.ready();
 
-        
+        if(FlutterChannel) {
+            FlutterChannel.postMessage("xxxffff");
+        }
     }
 
     onBtnAttack() {
