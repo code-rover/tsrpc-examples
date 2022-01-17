@@ -4,7 +4,7 @@ import { EnumRoomState } from "../EnumRoomState";
 export interface RoomState {
     id: number,
 
-    state: EnumRoomState
+    state: EnumRoomState,
 
     taskProcess: number,
 
